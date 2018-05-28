@@ -7,6 +7,8 @@ using Sabresaurus.PlayerPrefsExtensions;
 
 public class PlayerPrefsEditor : EditorWindow
 {
+    private static System.Text.Encoding encoding = new System.Text.UTF8Encoding();
+
 	// Represents a PlayerPref key-value record
     [Serializable]
     private struct PlayerPrefPair
@@ -187,7 +189,7 @@ public class PlayerPrefsEditor : EditorWindow
 					else if(ambiguousValue.GetType() == typeof(byte[]))
 					{
 						// On Unity 5 a string may be stored as binary, so convert it back to a string
-						ambiguousValue = System.Text.Encoding.Default.GetString((byte[])ambiguousValue);
+						ambiguousValue = encoding.GetString((byte[])ambiguousValue).TrimEnd('\0');
 					}
 					// Assign the key and value into the respective record in our output array
 					tempPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = ambiguousValue };
