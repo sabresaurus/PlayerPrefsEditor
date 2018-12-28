@@ -12,11 +12,12 @@ public static class PlayerPrefsUtility
 	public const string VALUE_FLOAT_PREFIX = "0";
 	public const string VALUE_INT_PREFIX = "1";
 	public const string VALUE_STRING_PREFIX = "2";
+    public const string VALUE_BOOL_PREFIX = "3";
 
-	/// <summary>
-	/// Determines if the specified player pref key refers to an encrypted record
-	/// </summary>
-	public static bool IsEncryptedKey (string key)
+    /// <summary>
+    /// Determines if the specified player pref key refers to an encrypted record
+    /// </summary>
+    public static bool IsEncryptedKey (string key)
 	{
 		// Encrypted keys use a special prefix
 		if(key.StartsWith(KEY_PREFIX))
@@ -81,13 +82,25 @@ public static class PlayerPrefsUtility
 
 		// Store the encrypted key and value (with relevant identifying prefixes) in PlayerPrefs
 		PlayerPrefs.SetString(KEY_PREFIX + encryptedKey, VALUE_STRING_PREFIX + encryptedValue);
-	}
+    }
 
-	/// <summary>
-	/// Helper method that can handle any of the encrypted player pref types, returning a float, int or string based
-	/// on what type of value has been stored.
-	/// </summary>
-	public static object GetEncryptedValue(string encryptedKey, string encryptedValue)
+    /// <summary>
+    /// Encrypted version of EditorPrefs.SetBool(), stored key and value is encrypted in player prefs
+    /// </summary>
+    public static void SetEncryptedBool(string key, bool value)
+    {
+        string encryptedKey = SimpleEncryption.EncryptString(key);
+        string encryptedValue = SimpleEncryption.EncryptBool(value);
+
+        // Store the encrypted key and value (with relevant identifying prefixes) in PlayerPrefs
+        PlayerPrefs.SetString(KEY_PREFIX + encryptedKey, VALUE_BOOL_PREFIX + encryptedValue);
+    }
+
+    /// <summary>
+    /// Helper method that can handle any of the encrypted player pref types, returning a float, int or string based
+    /// on what type of value has been stored.
+    /// </summary>
+    public static object GetEncryptedValue(string encryptedKey, string encryptedValue)
 	{
 		// See what type identifier the encrypted value starts
 		if(encryptedValue.StartsWith(VALUE_FLOAT_PREFIX))
@@ -104,8 +117,13 @@ public static class PlayerPrefsUtility
 		{
 			// It's a string, so decrypt it as a string and return the value
 			return GetEncryptedString(SimpleEncryption.DecryptString(encryptedKey.Substring(KEY_PREFIX.Length)));
-		}
-		else
+        }
+        else if (encryptedValue.StartsWith(VALUE_BOOL_PREFIX))
+        {
+            // It's a string, so decrypt it as a string and return the value
+            return GetEncryptedBool(SimpleEncryption.DecryptString(encryptedKey.Substring(KEY_PREFIX.Length)));
+        }
+        else
 		{
 			throw new InvalidOperationException("Could not decrypt item, no match found in known encrypted key prefixes");
 		}
@@ -189,10 +207,36 @@ public static class PlayerPrefsUtility
 		}
 	}
 
-	/// <summary>
-	/// Helper method to store a bool in PlayerPrefs (stored as an int)
-	/// </summary>
-	public static void SetBool(string key, bool value)
+    /// <summary>
+    /// Encrypted version of EditorPrefs.GetBool(), an unencrypted key is passed and the value is returned decrypted
+    /// </summary>
+    public static bool GetEncryptedBool(string key, bool defaultValue = false)
+    {
+        // Encrypt and prefix the key so we can look it up from player prefs
+        string encryptedKey = KEY_PREFIX + SimpleEncryption.EncryptString(key);
+
+        // Look up the encrypted value
+        string fetchedString = PlayerPrefs.GetString(encryptedKey);
+
+        if (!string.IsNullOrEmpty(fetchedString))
+        {
+            // Strip out the type identifier character
+            fetchedString = fetchedString.Remove(0, 1);
+
+            // Decrypt and return the int value
+            return SimpleEncryption.DecryptBool(fetchedString);
+        }
+        else
+        {
+            // No existing player pref value, so return defaultValue instead
+            return defaultValue;
+        }
+    }
+
+    /// <summary>
+    /// Helper method to store a bool in PlayerPrefs (stored as an int)
+    /// </summary>
+    public static void SetBool(string key, bool value)
 	{
 		// Store the bool as an int (1 for true, 0 for false)
 		if(value)

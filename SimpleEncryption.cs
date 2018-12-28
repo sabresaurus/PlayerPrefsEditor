@@ -108,6 +108,20 @@ namespace Sabresaurus.PlayerPrefsExtensions
 			return SimpleEncryption.EncryptString(base64);
 		}
 
+        /// Encrypts the specified bool value and returns an encrypted string
+        /// </summary>
+        public static string EncryptBool(bool value)
+        {
+            // Convert the bool value into its 4 bytes
+            byte[] bytes = BitConverter.GetBytes(value);
+
+            // Represent those bytes as a base 64 string
+            string base64 = Convert.ToBase64String(bytes);
+
+            // Return the encrypted version of that base 64 string
+            return SimpleEncryption.EncryptString(base64);
+        }
+
 		/// <summary>
 		/// Decrypts the encrypted string representing a float into the decrypted float
 		/// </summary>
@@ -137,5 +151,20 @@ namespace Sabresaurus.PlayerPrefsExtensions
 			// Turn the bytes back into a int and return it
 			return BitConverter.ToInt32(bytes, 0);
 		}
+
+        /// <summary>
+        /// Decrypts the encrypted string representing a bool into the decrypted bool
+        /// </summary>
+        public static bool DecryptBool(string sourceString)
+        {
+            // Decrypt the encrypted string 
+            string decryptedString = SimpleEncryption.DecryptString(sourceString);
+
+            // Convert the decrypted Base 64 representation back into bytes
+            byte[] bytes = Convert.FromBase64String(decryptedString);
+
+            // Turn the bytes back into a bool and return it
+            return BitConverter.ToBoolean(bytes, 0);
+        }
 	}
 }
