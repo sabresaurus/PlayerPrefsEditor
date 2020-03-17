@@ -303,9 +303,17 @@ public class PlayerPrefsEditor : EditorWindow
 
             if (showEditorPrefs)
             {
-                string majorVersion = Application.unityVersion.Split('.')[0];
+                // Starting Unity 5.5 registry key has " 5.x" suffix: https://docs.unity3d.com/550/Documentation/ScriptReference/EditorPrefs.html
+                // Even though for some versions of Unity docs state that N.x suffix is used where N.x is the major version number,
+                // it's still " 5.x" suffix used for that cases which is probably bug in the docs.
+                // Note that starting 2019.2 docs have " 5.x" suffix: https://docs.unity3d.com/2019.2/Documentation/ScriptReference/EditorPrefs.html
+#if UNITY_5_5_OR_NEWER
+                string subKeyPath = "Software\\Unity Technologies\\Unity Editor 5.x";
+#else
+                string subKeyPath = "Software\\Unity Technologies\\Unity Editor";
+#endif
 
-                registryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey("Software\\Unity Technologies\\Unity Editor " + majorVersion + ".x");
+                registryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(subKeyPath);
             }
             else
             {
