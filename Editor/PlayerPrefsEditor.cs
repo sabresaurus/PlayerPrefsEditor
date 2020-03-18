@@ -98,6 +98,15 @@ public class PlayerPrefsEditor : EditorWindow
         editor.minSize = minSize;
     }
 
+    private static string GetMacOSEditorPrefsPath()
+    {
+        // From Unity Docs: On macOS, EditorPrefs are stored in ~/Library/Preferences/com.unity3d.UnityEditor.plist.
+        string majorVersion = Application.unityVersion.Split('.')[0];
+        // Construct the fully qualified path
+        string editorPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), "com.unity3d.UnityEditor" + majorVersion + ".x.plist");
+        return editorPrefsPath;
+    }
+
     private void OnEnable()
     {
         searchField = new SearchField();
@@ -247,10 +256,7 @@ public class PlayerPrefsEditor : EditorWindow
 
             if (showEditorPrefs)
             {
-                // From Unity Docs: On macOS, EditorPrefs are stored in ~/Library/Preferences/com.unity3d.UnityEditor.plist.
-                string majorVersion = Application.unityVersion.Split('.')[0];
-                // Construct the fully qualified path
-                playerPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), "com.unity3d.UnityEditor" + majorVersion + ".x.plist");
+                playerPrefsPath = GetMacOSEditorPrefsPath();
             }
             else
             {
@@ -1051,10 +1057,7 @@ public class PlayerPrefsEditor : EditorWindow
 
             if (showEditorPrefs)
             {
-                // From Unity Docs: On macOS, EditorPrefs are stored in ~/Library/Preferences/com.unity3d.UnityEditor.plist.
-                string majorVersion = Application.unityVersion.Split('.')[0];
-                // Construct the fully qualified path
-                playerPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), "com.unity3d.UnityEditor" + majorVersion + ".x.plist");
+                playerPrefsPath = GetMacOSEditorPrefsPath();
             }
             else
             {
