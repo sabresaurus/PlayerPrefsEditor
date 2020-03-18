@@ -100,10 +100,17 @@ public class PlayerPrefsEditor : EditorWindow
 
     private static string GetMacOSEditorPrefsPath()
     {
+#if UNITY_2017_4_OR_NEWER
+        // From Unity Docs: On macOS, EditorPrefs are stored in ~/Library/Preferences/com.unity3d.UnityEditor5.x.plist
+        // https://docs.unity3d.com/2017.4/Documentation/ScriptReference/EditorPrefs.html
+        string fileName = "com.unity3d.UnityEditor5.x.plist";
+#else
         // From Unity Docs: On macOS, EditorPrefs are stored in ~/Library/Preferences/com.unity3d.UnityEditor.plist.
-        string majorVersion = Application.unityVersion.Split('.')[0];
+        // https://docs.unity3d.com/2017.3/Documentation/ScriptReference/EditorPrefs.html
+        string fileName = "com.unity3d.UnityEditor.plist";
+#endif
         // Construct the fully qualified path
-        string editorPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), "com.unity3d.UnityEditor" + majorVersion + ".x.plist");
+        string editorPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), fileName);
         return editorPrefsPath;
     }
 
