@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 
-namespace Sabresaurus.PlayerPrefsExtensions
+namespace Sabresaurus.PlayerPrefsUtilities
 {
 	public static class SimpleEncryption
 	{

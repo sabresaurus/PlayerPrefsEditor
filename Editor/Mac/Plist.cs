@@ -33,7 +33,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 
-namespace Sabresaurus.PlayerPrefsExtensions
+namespace Sabresaurus.PlayerPrefsEditor
 {
     public static class Plist
     {
