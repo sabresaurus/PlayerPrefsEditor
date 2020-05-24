@@ -254,7 +254,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         }
 
         /// <summary>
-        /// This returns an array of the stored PlayerPrefs from the file system (OSX) or registry (Windows), to allow 
+        /// This returns an array of the stored PlayerPrefs from the file system (OSX) or registry (Windows), to allow
         /// us to to look up what's actually in the PlayerPrefs. This is used as a kind of lookup table.
         /// </summary>
         private PlayerPrefPair[] RetrieveSavedPrefs(string companyName, string productName)
@@ -364,7 +364,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                         object ambiguousValue = registryKey.GetValue(valueName);
 
                         // Unfortunately floats will come back as an int (at least on 64 bit) because the float is stored as
-                        // 64 bit but marked as 32 bit - which confuses the GetValue() method greatly! 
+                        // 64 bit but marked as 32 bit - which confuses the GetValue() method greatly!
                         if (ambiguousValue.GetType() == typeof(int))
                         {
                             // If the PlayerPref is not actually an int then it must be a float, this will evaluate to true
@@ -467,9 +467,9 @@ namespace Sabresaurus.PlayerPrefsEditor
             int newIndex = GUILayout.Toolbar(oldIndex, new string[] { "PlayerPrefs", "EditorPrefs" });
 
             // Has the toggle changed?
-            if(newIndex != oldIndex)
+            if (newIndex != oldIndex)
             {
-                // Reset 
+                // Reset
                 lastDeserialization = null;
                 showEditorPrefs = (newIndex == 1);
             }
@@ -486,7 +486,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.EndHorizontal();
 
             // Create a GUIStyle that can be manipulated for the various text fields
-            GUIStyle textFieldStyle = new GUIStyle (GUI.skin.textField);
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
 
             // Could be dealing with either the full list or search results, so get the right list
             List<PlayerPrefPair> activePlayerPrefs = deserializedPlayerPrefs;
@@ -505,14 +505,14 @@ namespace Sabresaurus.PlayerPrefsEditor
             // Start the scrollable area
             scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
             // Ensure the scroll doesn't go below zero
-            if(scrollPosition.y < 0)
+            if (scrollPosition.y < 0)
             {
                 scrollPosition.y = 0;
             }
-            
+
             // The following code has been optimised so that rather than attempting to draw UI for every single PlayerPref
             // it instead only draws the UI for those currently visible in the scroll view and pads above and below those
-            // results to maintain the right size using GUILayout.Space(). This enables us to work with thousands of 
+            // results to maintain the right size using GUILayout.Space(). This enables us to work with thousands of
             // PlayerPrefs without slowing the interface to a halt.
 
             // Fixed height of one of the rows in the table
@@ -559,15 +559,15 @@ namespace Sabresaurus.PlayerPrefsEditor
                 // Colour code encrypted PlayerPrefs blue
                 if (isEncryptedPair)
                 {
-                    if(UsingProSkin)
+                    if (UsingProSkin)
                     {
-                        textFieldStyle.normal.textColor = new Color(0.5f,0.5f,1);
-                        textFieldStyle.focused.textColor = new Color(0.5f,0.5f,1);
+                        textFieldStyle.normal.textColor = new Color(0.5f, 0.5f, 1);
+                        textFieldStyle.focused.textColor = new Color(0.5f, 0.5f, 1);
                     }
                     else
                     {
-                        textFieldStyle.normal.textColor = new Color(0,0,1);
-                        textFieldStyle.focused.textColor = new Color(0,0,1);
+                        textFieldStyle.normal.textColor = new Color(0, 0, 1);
+                        textFieldStyle.focused.textColor = new Color(0, 0, 1);
                     }
                 }
                 else
@@ -605,7 +605,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                         textFieldStyle.normal.textColor = Color.red;
                         textFieldStyle.focused.textColor = Color.red;
 
-                        // Track that the auto decrypt failed, so we can prevent any editing 
+                        // Track that the auto decrypt failed, so we can prevent any editing
                         failedAutoDecrypt = true;
                     }
                 }
@@ -615,7 +615,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 // The type of PlayerPref being stored (in auto decrypt mode this works with the decrypted values too)
                 Type valueType;
 
-                // If it's an encrypted playerpref, we're automatically decrypting and it didn't fail the earlier 
+                // If it's an encrypted playerpref, we're automatically decrypting and it didn't fail the earlier
                 // auto decrypt test
                 if (isEncryptedPair && automaticDecryption && !failedAutoDecrypt)
                 {
@@ -634,7 +634,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     {
                         valueType = typeof(bool);
                     }
-                    else if (encryptedValue.StartsWith(PlayerPrefsUtility.VALUE_STRING_PREFIX) || string.IsNullOrEmpty (encryptedValue))
+                    else if (encryptedValue.StartsWith(PlayerPrefsUtility.VALUE_STRING_PREFIX) || string.IsNullOrEmpty(encryptedValue))
                     {
                         // Special case here, empty encrypted values will also report as strings
                         valueType = typeof(string);
@@ -646,7 +646,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 }
                 else
                 {
-                    // Otherwise fallback to the type of the cached value (for non-encrypted values this will be 
+                    // Otherwise fallback to the type of the cached value (for non-encrypted values this will be
                     // correct). For encrypted values when not in auto-decrypt mode, this will return string type
                     valueType = deserializedValue.GetType();
                 }
@@ -708,7 +708,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
                     // Display the int editor field and get any changes in value
                     int newValue = EditorGUILayout.IntField(initialValue, textFieldStyle);
-                    
+
                     // If the value has changed
                     if (newValue != initialValue)
                     {
@@ -847,8 +847,8 @@ namespace Sabresaurus.PlayerPrefsEditor
         private void DrawAddEntry()
         {
             // Create a GUIStyle that can be manipulated for the various text fields
-            GUIStyle textFieldStyle = new GUIStyle (GUI.skin.textField);
-            
+            GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
+
             // Create a space
             EditorGUILayout.Space();
 
@@ -859,7 +859,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.BeginHorizontal();
             newEntryIsEncrypted = GUILayout.Toggle(newEntryIsEncrypted, "Encrypt");
 
-            if(showEditorPrefs)
+            if (showEditorPrefs)
             {
                 newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)newEntryType, new string[] { "float", "int", "string", "bool" });
             }
@@ -870,7 +870,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
                 newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)newEntryType, new string[] { "float", "int", "string" });
             }
-            
+
             EditorGUILayout.EndHorizontal();
 
             // Key and Value headings
@@ -883,15 +883,15 @@ namespace Sabresaurus.PlayerPrefsEditor
             // encrypted PlayerPrefs)
             if (newEntryIsEncrypted)
             {
-                if(UsingProSkin)
+                if (UsingProSkin)
                 {
-                    textFieldStyle.normal.textColor = new Color(0.5f,0.5f,1);
-                    textFieldStyle.focused.textColor = new Color(0.5f,0.5f,1);
+                    textFieldStyle.normal.textColor = new Color(0.5f, 0.5f, 1);
+                    textFieldStyle.focused.textColor = new Color(0.5f, 0.5f, 1);
                 }
                 else
                 {
-                    textFieldStyle.normal.textColor = new Color(0,0,1);
-                    textFieldStyle.focused.textColor = new Color(0,0,1);
+                    textFieldStyle.normal.textColor = new Color(0, 0, 1);
+                    textFieldStyle.focused.textColor = new Color(0, 0, 1);
                 }
             }
 
@@ -904,7 +904,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             // Track the next control so we can detect key events in it
             GUI.SetNextControlName("newEntryValue");
-            
+
             // Display the correct UI field editor based on what type of PlayerPref is being created
             if (newEntryType == PlayerPrefType.Float)
             {
@@ -914,7 +914,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             {
                 newEntryValueInt = EditorGUILayout.IntField(newEntryValueInt, textFieldStyle);
             }
-            else if(newEntryType == PlayerPrefType.Bool)
+            else if (newEntryType == PlayerPrefType.Bool)
             {
                 newEntryValueBool = EditorGUILayout.Toggle(newEntryValueBool);
             }
@@ -1077,13 +1077,13 @@ namespace Sabresaurus.PlayerPrefsEditor
                     // Now construct the fully qualified path
                     playerPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), plistFilename);
                 }
-        
+
                 // Determine when the plist was last written to
                 DateTime lastWriteTime = File.GetLastWriteTimeUtc(playerPrefsPath);
 
-                // If we haven't deserialized the PlayerPrefs already, or the written file has changed then deserialize 
+                // If we haven't deserialized the PlayerPrefs already, or the written file has changed then deserialize
                 // the latest version
-                if(!lastDeserialization.HasValue || lastDeserialization.Value != lastWriteTime)
+                if (!lastDeserialization.HasValue || lastDeserialization.Value != lastWriteTime)
                 {
                     // Deserialize the actual PlayerPrefs from file into a cache
                     deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
@@ -1091,8 +1091,8 @@ namespace Sabresaurus.PlayerPrefsEditor
                     // Record the version of the file we just read, so we know if it changes in the future
                     lastDeserialization = lastWriteTime;
                 }
-                
-                if(lastWriteTime != MISSING_DATETIME)
+
+                if (lastWriteTime != MISSING_DATETIME)
                 {
                     GUILayout.Label("Plist Last Written: " + lastWriteTime.ToString());
                 }
@@ -1101,14 +1101,14 @@ namespace Sabresaurus.PlayerPrefsEditor
                     GUILayout.Label("Plist Does Not Exist");
                 }
             }
-            else if(Application.platform == RuntimePlatform.WindowsEditor)
+            else if (Application.platform == RuntimePlatform.WindowsEditor)
             {
                 // Windows works a bit differently to OSX, we just regularly query the registry. So don't query too often
                 if (!lastDeserialization.HasValue || DateTime.UtcNow - lastDeserialization.Value > TimeSpan.FromMilliseconds(500))
                 {
                     // Deserialize the actual PlayerPrefs from registry into a cache
                     deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
-        
+
                     // Record the latest time, so we don't fetch again too quickly
                     lastDeserialization = DateTime.UtcNow;
                 }
@@ -1133,7 +1133,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         {
             // First of all check if this key already exists, if so replace it's value with the new value
             bool replaced = false;
-            
+
             int entryCount = deserializedPlayerPrefs.Count;
             for (int i = 0; i < entryCount; i++)
             {
@@ -1147,9 +1147,9 @@ namespace Sabresaurus.PlayerPrefsEditor
                     break;
                 }
             }
-            
+
             // PlayerPref doesn't already exist (and wasn't replaced) so add it as new
-            if(!replaced)
+            if (!replaced)
             {
                 // Cache a PlayerPref the user just created so it can be instantly display (mainly for OSX)
                 deserializedPlayerPrefs.Add(new PlayerPrefPair() { Key = key, Value = value });
@@ -1161,14 +1161,14 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void DeleteCachedRecord(string fullKey)
         {
-            keyQueuedForDeletion = fullKey;		
+            keyQueuedForDeletion = fullKey;
         }
 
         // OnInspectorUpdate() is called by Unity at 10 times a second
         private void OnInspectorUpdate()
         {
             // If a PlayerPref has been specified for deletion
-            if(!string.IsNullOrEmpty(keyQueuedForDeletion))
+            if (!string.IsNullOrEmpty(keyQueuedForDeletion))
             {
                 // If the user just deleted a PlayerPref, find the ID and defer it for deletion by OnInspectorUpdate()
                 if (deserializedPlayerPrefs != null)
@@ -1222,13 +1222,13 @@ namespace Sabresaurus.PlayerPrefsEditor
             // Force a save
             Save();
         }
-        
+
         bool UsingProSkin
         {
             get
             {
 #if UNITY_3_4
-                if(EditorPrefs.GetInt("UserSkin") == 1)		
+                if(EditorPrefs.GetInt("UserSkin") == 1)
                 {
                     return true;
                 }

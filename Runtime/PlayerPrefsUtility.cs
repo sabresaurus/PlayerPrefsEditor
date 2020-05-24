@@ -18,10 +18,10 @@ namespace Sabresaurus.PlayerPrefsUtilities
         /// <summary>
         /// Determines if the specified player pref key refers to an encrypted record
         /// </summary>
-        public static bool IsEncryptedKey (string key)
+        public static bool IsEncryptedKey(string key)
         {
             // Encrypted keys use a special prefix
-            if(key.StartsWith(KEY_PREFIX))
+            if (key.StartsWith(KEY_PREFIX))
             {
                 return true;
             }
@@ -36,7 +36,7 @@ namespace Sabresaurus.PlayerPrefsUtilities
         /// </summary>
         public static string DecryptKey(string encryptedKey)
         {
-            if(encryptedKey.StartsWith(KEY_PREFIX))
+            if (encryptedKey.StartsWith(KEY_PREFIX))
             {
                 // Remove the key prefix from the encrypted key
                 string strippedKey = encryptedKey.Substring(KEY_PREFIX.Length);
@@ -104,17 +104,17 @@ namespace Sabresaurus.PlayerPrefsUtilities
         public static object GetEncryptedValue(string encryptedKey, string encryptedValue)
         {
             // See what type identifier the encrypted value starts
-            if(encryptedValue.StartsWith(VALUE_FLOAT_PREFIX))
+            if (encryptedValue.StartsWith(VALUE_FLOAT_PREFIX))
             {
                 // It's a float, so decrypt it as a float and return the value
                 return GetEncryptedFloat(SimpleEncryption.DecryptString(encryptedKey.Substring(KEY_PREFIX.Length)));
             }
-            else if(encryptedValue.StartsWith(VALUE_INT_PREFIX))
+            else if (encryptedValue.StartsWith(VALUE_INT_PREFIX))
             {
                 // It's an int, so decrypt it as an int and return the value
                 return GetEncryptedInt(SimpleEncryption.DecryptString(encryptedKey.Substring(KEY_PREFIX.Length)));
             }
-            else if(encryptedValue.StartsWith(VALUE_STRING_PREFIX))
+            else if (encryptedValue.StartsWith(VALUE_STRING_PREFIX))
             {
                 // It's a string, so decrypt it as a string and return the value
                 return GetEncryptedString(SimpleEncryption.DecryptString(encryptedKey.Substring(KEY_PREFIX.Length)));
@@ -141,13 +141,13 @@ namespace Sabresaurus.PlayerPrefsUtilities
             // Look up the encrypted value
             string fetchedString = PlayerPrefs.GetString(encryptedKey);
 
-            if(!string.IsNullOrEmpty(fetchedString))
+            if (!string.IsNullOrEmpty(fetchedString))
             {
                 // Strip out the type identifier character
                 fetchedString = fetchedString.Remove(0, 1);
 
                 // Decrypt and return the float value
-                return SimpleEncryption.DecryptFloat (fetchedString);
+                return SimpleEncryption.DecryptFloat(fetchedString);
             }
             else
             {
@@ -163,17 +163,17 @@ namespace Sabresaurus.PlayerPrefsUtilities
         {
             // Encrypt and prefix the key so we can look it up from player prefs
             string encryptedKey = KEY_PREFIX + SimpleEncryption.EncryptString(key);
-            
+
             // Look up the encrypted value
             string fetchedString = PlayerPrefs.GetString(encryptedKey);
 
-            if(!string.IsNullOrEmpty(fetchedString))
+            if (!string.IsNullOrEmpty(fetchedString))
             {
                 // Strip out the type identifier character
                 fetchedString = fetchedString.Remove(0, 1);
 
                 // Decrypt and return the int value
-                return SimpleEncryption.DecryptInt (fetchedString);
+                return SimpleEncryption.DecryptInt(fetchedString);
             }
             else
             {
@@ -189,17 +189,17 @@ namespace Sabresaurus.PlayerPrefsUtilities
         {
             // Encrypt and prefix the key so we can look it up from player prefs
             string encryptedKey = KEY_PREFIX + SimpleEncryption.EncryptString(key);
-            
+
             // Look up the encrypted value
             string fetchedString = PlayerPrefs.GetString(encryptedKey);
 
-            if(!string.IsNullOrEmpty(fetchedString))
+            if (!string.IsNullOrEmpty(fetchedString))
             {
                 // Strip out the type identifier character
                 fetchedString = fetchedString.Remove(0, 1);
 
                 // Decrypt and return the string value
-                return SimpleEncryption.DecryptString (fetchedString);
+                return SimpleEncryption.DecryptString(fetchedString);
             }
             else
             {
@@ -240,7 +240,7 @@ namespace Sabresaurus.PlayerPrefsUtilities
         public static void SetBool(string key, bool value)
         {
             // Store the bool as an int (1 for true, 0 for false)
-            if(value)
+            if (value)
             {
                 PlayerPrefs.SetInt(key, 1);
             }
@@ -256,12 +256,12 @@ namespace Sabresaurus.PlayerPrefsUtilities
         public static bool GetBool(string key, bool defaultValue = false)
         {
             // Use HasKey to check if the bool has been stored (as int defaults to 0 which is ambiguous with a stored False)
-            if(PlayerPrefs.HasKey(key))
+            if (PlayerPrefs.HasKey(key))
             {
                 int value = PlayerPrefs.GetInt(key);
 
                 // As in C, assume zero is false and any non-zero value (including its intended 1) is true
-                if(value != 0)
+                if (value != 0)
                 {
                     return true;
                 }
@@ -287,20 +287,20 @@ namespace Sabresaurus.PlayerPrefsUtilities
         }
 
         /// <summary>
-        /// Generic helper method to retrieve an enum value from PlayerPrefs and parse it from its stored string into the 
+        /// Generic helper method to retrieve an enum value from PlayerPrefs and parse it from its stored string into the
         /// specified generic type. This method should generally be preferred over the non-generic equivalent
         /// </summary>
-        public static T GetEnum<T>(string key, T defaultValue = default(T)) where T: struct 
+        public static T GetEnum<T>(string key, T defaultValue = default(T)) where T : struct
         {
             // Fetch the string value from PlayerPrefs
-            string stringValue = PlayerPrefs.GetString (key);
+            string stringValue = PlayerPrefs.GetString(key);
 
-            if(!string.IsNullOrEmpty(stringValue))
+            if (!string.IsNullOrEmpty(stringValue))
             {
                 // Existing value, so parse it using the supplied generic type and cast before returning it
                 return (T)Enum.Parse(typeof(T), stringValue);
             }
-            else 
+            else
             {
                 // No player pref for this, just return default. If no default is supplied this will be the enum's default
                 return defaultValue;
@@ -315,9 +315,9 @@ namespace Sabresaurus.PlayerPrefsUtilities
         public static object GetEnum(string key, Type enumType, object defaultValue)
         {
             // Fetch the string value from PlayerPrefs
-            string value = PlayerPrefs.GetString (key);
+            string value = PlayerPrefs.GetString(key);
 
-            if(!string.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
                 // Existing value, parse it using the supplied type, then return the result as an object
                 return Enum.Parse(enumType, value);
@@ -349,7 +349,7 @@ namespace Sabresaurus.PlayerPrefsUtilities
             // Fetch the string value from PlayerPrefs
             string stringValue = PlayerPrefs.GetString(key);
 
-            if(!string.IsNullOrEmpty(stringValue))
+            if (!string.IsNullOrEmpty(stringValue))
             {
                 // Make sure to parse it using Roundtrip Kind otherwise a local time would come out as UTC
                 return DateTime.Parse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
@@ -378,7 +378,7 @@ namespace Sabresaurus.PlayerPrefsUtilities
             // Fetch the string value from PlayerPrefs
             string stringValue = PlayerPrefs.GetString(key);
 
-            if(!string.IsNullOrEmpty(stringValue))
+            if (!string.IsNullOrEmpty(stringValue))
             {
                 // Parse the string and return the TimeSpan
                 return TimeSpan.Parse(stringValue);
