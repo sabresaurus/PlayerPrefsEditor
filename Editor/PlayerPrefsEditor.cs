@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
-using UnityEngine;
-using Sabresaurus.PlayerPrefsUtilities;
 #if UNITY_5_6_OR_NEWER
 using UnityEditor.IMGUI.Controls;
 #endif
+using UnityEngine;
+using Sabresaurus.PlayerPrefsUtilities;
 
 namespace Sabresaurus.PlayerPrefsEditor
 {
