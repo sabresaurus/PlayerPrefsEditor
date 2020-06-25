@@ -1,39 +1,42 @@
-﻿using UnityEngine;
-using UnityEditor;
+﻿using UnityEditor;
+using UnityEngine;
 
-public class ImportPlayerPrefsWizard : ScriptableWizard
+namespace Sabresaurus.PlayerPrefsEditor
 {
-    // Company and product name for importing PlayerPrefs from other projects
-    [SerializeField] string importCompanyName = "";
-    [SerializeField] string importProductName = "";
-
-    private void OnEnable()
+    public class ImportPlayerPrefsWizard : ScriptableWizard
     {
-        importCompanyName = PlayerSettings.companyName;
-        importProductName = PlayerSettings.productName;
-    }
+        // Company and product name for importing PlayerPrefs from other projects
+        [SerializeField] string importCompanyName = "";
+        [SerializeField] string importProductName = "";
 
-    private void OnInspectorUpdate()
-    {
-        if (Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor)).Length == 0)
+        private void OnEnable()
         {
-            Close();
+            importCompanyName = PlayerSettings.companyName;
+            importProductName = PlayerSettings.productName;
         }
-    }
 
-    protected override bool DrawWizardGUI()
-    {
-        GUILayout.Label("Import PlayerPrefs from another project, also useful if you change product or company name", EditorStyles.wordWrappedLabel);
-        EditorGUILayout.Separator();
-        bool v = base.DrawWizardGUI();
-        return v;
-    }
-
-    private void OnWizardCreate()
-    {
-        if (Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor)).Length >= 1)
+        private void OnInspectorUpdate()
         {
-            ((PlayerPrefsEditor)Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor))[0]).Import(importCompanyName, importProductName);
+            if (Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor)).Length == 0)
+            {
+                Close();
+            }
+        }
+
+        protected override bool DrawWizardGUI()
+        {
+            GUILayout.Label("Import PlayerPrefs from another project, also useful if you change product or company name", EditorStyles.wordWrappedLabel);
+            EditorGUILayout.Separator();
+            bool v = base.DrawWizardGUI();
+            return v;
+        }
+
+        private void OnWizardCreate()
+        {
+            if (Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor)).Length >= 1)
+            {
+                ((PlayerPrefsEditor)Resources.FindObjectsOfTypeAll(typeof(PlayerPrefsEditor))[0]).Import(importCompanyName, importProductName);
+            }
         }
     }
 }
