@@ -15,7 +15,6 @@ namespace Sabresaurus.PlayerPrefsEditor
         private static System.Text.Encoding encoding = new System.Text.UTF8Encoding();
 
         // Represents a PlayerPref key-value record
-        [Serializable]
         private struct PlayerPrefPair
         {
             public string Key
