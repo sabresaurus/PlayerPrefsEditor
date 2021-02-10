@@ -119,6 +119,9 @@ namespace Sabresaurus.PlayerPrefsEditor
         private void OnEnable()
         {
             searchField = new SearchField();
+
+            DeserializePrefsIntoCache();
+            UpdateSearch();
         }
 
         private void DeleteAll()
