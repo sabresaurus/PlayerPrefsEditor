@@ -1054,12 +1054,8 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void OnGUI()
+        private void DeserializePrefsIntoCache()
         {
-            EditorGUILayout.Space();
-
-            DrawTopBar();
-
             if (Application.platform == RuntimePlatform.OSXEditor)
             {
                 string playerPrefsPath;
@@ -1113,6 +1109,15 @@ namespace Sabresaurus.PlayerPrefsEditor
                     lastDeserialization = DateTime.UtcNow;
                 }
             }
+        }
+
+        private void OnGUI()
+        {
+            EditorGUILayout.Space();
+
+            DrawTopBar();
+
+            DeserializePrefsIntoCache();
 
             DrawMainList();
 
