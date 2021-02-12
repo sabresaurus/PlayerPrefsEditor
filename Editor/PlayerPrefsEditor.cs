@@ -119,7 +119,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         {
             searchField = new SearchField();
 
-            DeserializePrefsIntoCache();
+            deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
             UpdateSearch();
         }
 
