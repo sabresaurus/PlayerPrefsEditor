@@ -1,6 +1,6 @@
 # PlayerPrefs Editor & Utilities
 
-[![openupm](https://img.shields.io/npm/v/com.sabresaurus.playerprefseditor?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.sabresaurus.playerprefseditor/) ![GitHub](https://img.shields.io/github/license/sabresaurus/PlayerPrefsEditor) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](http://makeapullrequest.com)
+[![openupm](https://img.shields.io/npm/v/com.sabresaurus.playerprefseditor?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.sabresaurus.playerprefseditor/) [![GitHub](https://img.shields.io/github/license/sabresaurus/PlayerPrefsEditor)](https://github.com/sabresaurus/PlayerPrefsEditor/blob/master/LICENSE.md) [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-blue.svg)](http://makeapullrequest.com)
 
 PlayerPrefs Editor & Utilities provide an easy way to see what PlayerPrefs your game is using and change them at run-time. It also includes encryption support to protect your player prefs from casual hacking and has additional support for more data types.
 
