@@ -15,7 +15,6 @@ namespace Sabresaurus.PlayerPrefsEditor
         private static System.Text.Encoding encoding = new System.Text.UTF8Encoding();
 
         // Represents a PlayerPref key-value record
-        [Serializable]
         private struct PlayerPrefPair
         {
             public string Key
@@ -119,6 +118,9 @@ namespace Sabresaurus.PlayerPrefsEditor
         private void OnEnable()
         {
             searchField = new SearchField();
+
+            deserializedPlayerPrefs = new List<PlayerPrefPair>(RetrieveSavedPrefs(PlayerSettings.companyName, PlayerSettings.productName));
+            UpdateSearch();
         }
 
         private void DeleteAll()
@@ -1054,12 +1056,8 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.EndHorizontal();
         }
 
-        private void OnGUI()
+        private void DeserializePrefsIntoCache()
         {
-            EditorGUILayout.Space();
-
-            DrawTopBar();
-
             if (Application.platform == RuntimePlatform.OSXEditor)
             {
                 string playerPrefsPath;
@@ -1113,6 +1111,15 @@ namespace Sabresaurus.PlayerPrefsEditor
                     lastDeserialization = DateTime.UtcNow;
                 }
             }
+        }
+
+        private void OnGUI()
+        {
+            EditorGUILayout.Space();
+
+            DrawTopBar();
+
+            DeserializePrefsIntoCache();
 
             DrawMainList();
 
