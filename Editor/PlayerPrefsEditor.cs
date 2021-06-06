@@ -437,6 +437,11 @@ namespace Sabresaurus.PlayerPrefsEditor
                 {
                     filteredPlayerPrefs.Add(deserializedPlayerPrefs[i]);
                 }
+                // Else check value
+                else if (deserializedPlayerPrefs[i].Value.ToString().ToLower().Contains(searchFilter.ToLower()))
+                {
+                    filteredPlayerPrefs.Add(deserializedPlayerPrefs[i]);
+                }
             }
         }
 
