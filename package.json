@@ -1,6 +1,6 @@
 {
     "name": "com.sabresaurus.playerprefseditor",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "displayName": "PlayerPrefs Editor & Utilities",
     "description": "PlayerPrefs Editor & Utilities provide an easy way to see what PlayerPrefs your game is using and change them at run-time.",
     "unity": "2017.1",
