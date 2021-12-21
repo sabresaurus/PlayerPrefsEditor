@@ -13,6 +13,19 @@ namespace Sabresaurus.PlayerPrefsUtilities
         // Cache the encryption provider
         private static RijndaelManaged provider = null;
 
+        public static void SetCustomKey(string key)
+        {
+            if (key.Length != 32)
+            {
+                throw new ArgumentException("Key must be exactly 32 characters long (256 bit)");
+            }
+            
+            SimpleEncryption.key = key;
+            
+            // Make sure the encryption provider is set using the correct key
+            SetupProvider();
+        }
+
         private static void SetupProvider()
         {
             // Create a new encryption provider

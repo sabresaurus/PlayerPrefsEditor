@@ -1,0 +1,21 @@
+﻿using Sabresaurus.PlayerPrefsUtilities;
+using UnityEditor;
+using UnityEngine;
+
+public class GameEncryptionKeyInitializer : BaseEncryptionKeyInitializer
+{
+    public override string GetCustomKey()
+    {
+        return "#CUSTOMKEY#"; 
+    }
+
+#if UNITY_EDITOR
+    [InitializeOnLoadMethod]
+#endif
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void RuntimeInitialize()
+    {
+        GameEncryptionKeyInitializer instance = new GameEncryptionKeyInitializer();
+        SimpleEncryption.SetCustomKey(instance.GetCustomKey());
+    }
+}
