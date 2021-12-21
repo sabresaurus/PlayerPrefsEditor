@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using UnityEditor;
 #if UNITY_5_6_OR_NEWER
 using UnityEditor.IMGUI.Controls;
@@ -1024,9 +1025,58 @@ namespace Sabresaurus.PlayerPrefsEditor
         {
             EditorGUILayout.Space();
 
+            EditorGUILayout.BeginHorizontal();
             // UI for toggling automatic decryption on and off
             automaticDecryption = EditorGUILayout.Toggle("Auto-Decryption", automaticDecryption);
 
+            TypeCache.TypeCollection encryptionInitializers = TypeCache.GetTypesDerivedFrom<BaseEncryptionKeyInitializer>();
+
+            if (this.position.width < 390)
+            {
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.BeginHorizontal();
+            }
+            
+            GUILayout.Label("Active Key", EditorStyles.boldLabel);
+            if (encryptionInitializers.Count == 0)
+            {
+                GUILayout.Label("Built-in");
+
+                if(GUILayout.Button(new GUIContent("Create Custom", "Generate a script file in your project specifying a unique key to use")))
+                {
+                    // Get the contents of the template file
+                    string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
+                    string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                    string templateText = File.ReadAllText(Path.Combine(Path.GetDirectoryName(assetPath), "GameEncryptionKeyInitializerTemplate.cs.txt"));
+
+                    // Replace the key in the template with a unique key
+                    string availableCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!\"£$%^&*(){}[];'#:@~,./<>?";
+                    byte[] data = new byte[4 * 32];
+                    using (var crypto = RandomNumberGenerator.Create())
+                    {
+                        crypto.GetBytes(data);
+                    }
+
+                    string key = "";
+                    for (int i = 0; i < 32; i++)
+                    {
+                        int index = (int) (BitConverter.ToUInt32(data, i * 4) % availableCharacters.Length);
+                        key += availableCharacters[index];
+                    }
+
+                    templateText = templateText.Replace("#CUSTOMKEY#", key);
+                    
+                    // Write the game encryption script to Assets/ and import it
+                    File.WriteAllText("Assets/GameEncryptionKeyInitializer.cs", templateText);
+                    AssetDatabase.ImportAsset("Assets/GameEncryptionKeyInitializer.cs", ImportAssetOptions.ForceUpdate);
+                }
+            }
+            else
+            {
+                GUILayout.Label("Custom");
+            }
+            
+            EditorGUILayout.EndHorizontal();
             if (showEditorPrefs == false)
             {
                 // Allow the user to import PlayerPrefs from another project (helpful when renaming product name)
