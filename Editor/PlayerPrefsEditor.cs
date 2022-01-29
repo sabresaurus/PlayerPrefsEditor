@@ -8,6 +8,7 @@ using UnityEditor.IMGUI.Controls;
 #endif
 using UnityEngine;
 using Sabresaurus.PlayerPrefsUtilities;
+using Random = UnityEngine.Random;
 
 namespace Sabresaurus.PlayerPrefsEditor
 {
@@ -1029,8 +1030,6 @@ namespace Sabresaurus.PlayerPrefsEditor
             // UI for toggling automatic decryption on and off
             automaticDecryption = EditorGUILayout.Toggle("Auto-Decryption", automaticDecryption);
 
-            TypeCache.TypeCollection encryptionInitializers = TypeCache.GetTypesDerivedFrom<BaseEncryptionKeyInitializer>();
-
             if (this.position.width < 390)
             {
                 EditorGUILayout.EndHorizontal();
@@ -1038,7 +1037,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             }
             
             GUILayout.Label("Active Key", EditorStyles.boldLabel);
-            if (encryptionInitializers.Count == 0)
+            if (!SimpleEncryption.IsCustomKeyApplied)
             {
                 GUILayout.Label("Built-in");
 
@@ -1050,21 +1049,13 @@ namespace Sabresaurus.PlayerPrefsEditor
                     string templateText = File.ReadAllText(Path.Combine(Path.GetDirectoryName(assetPath), "GameEncryptionKeyInitializerTemplate.cs.txt"));
 
                     // Replace the key in the template with a unique key
-                    string availableCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!\"£$%^&*(){}[];'#:@~,./<>?";
-                    byte[] data = new byte[4 * 32];
-                    using (var crypto = RandomNumberGenerator.Create())
-                    {
-                        crypto.GetBytes(data);
-                    }
-
-                    string key = "";
+                    byte[] key = new byte[32];
                     for (int i = 0; i < 32; i++)
                     {
-                        int index = (int) (BitConverter.ToUInt32(data, i * 4) % availableCharacters.Length);
-                        key += availableCharacters[index];
+                        key[i] = (byte) Random.Range(0, 256);
                     }
 
-                    templateText = templateText.Replace("#CUSTOMKEY#", key);
+                    templateText = templateText.Replace("#CUSTOMKEY#", string.Join(", ", key));
                     
                     // Write the game encryption script to Assets/ and import it
                     File.WriteAllText("Assets/GameEncryptionKeyInitializer.cs", templateText);

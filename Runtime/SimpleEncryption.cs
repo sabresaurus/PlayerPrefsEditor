@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -7,20 +8,37 @@ namespace Sabresaurus.PlayerPrefsUtilities
     public static class SimpleEncryption
     {
         // IMPORTANT: Make sure to change this key for each project you use this encryption in to help secure your
-        // encrypted values. This key must be exactly 32 characters long (256 bit).
-        private static string key = ":{j%6j?E:t#}G10mM%9hp5S=%}2,Y26C";
+        // encrypted values. This key must be exactly 32 bytes (256 bit).
+        private static byte[] key =
+        {
+            58, 123, 106, 37, 54, 106, 63, 69, 58, 116, 35, 125, 71, 49, 48, 109, 77, 37, 57, 104, 112, 53, 83, 61, 37, 125, 50, 44, 89, 50, 54, 67
+        };
 
+        private static bool customKeyApplied = false;
+        
         // Cache the encryption provider
         private static RijndaelManaged provider = null;
 
-        public static void SetCustomKey(string key)
+        public static bool IsCustomKeyApplied
+        {
+            get { return customKeyApplied; }
+        }
+
+        public static void SetCustomKey(string keyString)
+        {
+            SetCustomKey(Encoding.ASCII.GetBytes(keyString));
+        }
+        
+        public static void SetCustomKey(byte[] key)
         {
             if (key.Length != 32)
             {
-                throw new ArgumentException("Key must be exactly 32 characters long (256 bit)");
+                throw new ArgumentException("Key must be exactly 32 bytes long (256 bit)");
             }
-            
+
             SimpleEncryption.key = key;
+
+            customKeyApplied = true;
             
             // Make sure the encryption provider is set using the correct key
             SetupProvider();
@@ -31,8 +49,7 @@ namespace Sabresaurus.PlayerPrefsUtilities
             // Create a new encryption provider
             provider = new RijndaelManaged();
 
-            // Get the bytes from the supplied string key and use it as the provider's key
-            provider.Key = Encoding.ASCII.GetBytes(key);
+            provider.Key = key;
 
             // Ensure that the same data is always encrypted the same way when used with the same key
             provider.Mode = CipherMode.ECB;
