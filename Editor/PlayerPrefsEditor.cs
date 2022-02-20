@@ -1,11 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using UnityEditor;
-#if UNITY_5_6_OR_NEWER
 using UnityEditor.IMGUI.Controls;
-#endif
 using UnityEngine;
 using Sabresaurus.PlayerPrefsUtilities;
 using Random = UnityEngine.Random;
@@ -14,22 +11,26 @@ namespace Sabresaurus.PlayerPrefsEditor
 {
     public class PlayerPrefsEditor : EditorWindow
     {
-        private static System.Text.Encoding encoding = new System.Text.UTF8Encoding();
+        private static bool DisplayMoreOptions
+        {
+            get => EditorPrefs.GetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayMoreOptions));
+            set => EditorPrefs.SetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayMoreOptions), value);
+        }
+
+        private static bool DisplayAddPref
+        {
+            get => EditorPrefs.GetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayAddPref));
+            set => EditorPrefs.SetBool(nameof(PlayerPrefsEditor) + "." + nameof(DisplayAddPref), value);
+        }
+
+        private static readonly System.Text.Encoding encoding = new System.Text.UTF8Encoding();
 
         // Represents a PlayerPref key-value record
         private struct PlayerPrefPair
         {
-            public string Key
-            {
-                get;
-                set;
-            }
+            public string Key { get; set; }
 
-            public object Value
-            {
-                get;
-                set;
-            }
+            public object Value { get; set; }
         }
 
         readonly DateTime MISSING_DATETIME = new DateTime(1601, 1, 1);
@@ -38,7 +39,13 @@ namespace Sabresaurus.PlayerPrefsEditor
         bool showEditorPrefs = false;
 
         // Natively PlayerPrefs can be one of these three types
-        enum PlayerPrefType { Float = 0, Int, String, Bool };
+        enum PlayerPrefType
+        {
+            Float = 0,
+            Int,
+            String,
+            Bool
+        };
 
         // The actual cached store of PlayerPref records fetched from registry or plist
         List<PlayerPrefPair> deserializedPlayerPrefs = new List<PlayerPrefPair>();
@@ -69,6 +76,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         string keyQueuedForDeletion = null;
 
         #region Adding New PlayerPref
+
         // This is the current type of PlayerPref that the user is about to create
         PlayerPrefType newEntryType = PlayerPrefType.String;
 
@@ -83,6 +91,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         int newEntryValueInt = 0;
         bool newEntryValueBool = false;
         string newEntryValueString = "";
+
         #endregion
 
 #if UNITY_5_6_OR_NEWER
@@ -93,7 +102,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         private static void Init()
         {
             // Get existing open window or if none, make a new one:
-            PlayerPrefsEditor editor = (PlayerPrefsEditor)GetWindow(typeof(PlayerPrefsEditor), false, "Prefs Editor");
+            PlayerPrefsEditor editor = (PlayerPrefsEditor) GetWindow(typeof(PlayerPrefsEditor), false, "Prefs Editor");
 
             // Require the editor window to be at least 300 pixels wide
             Vector2 minSize = editor.minSize;
@@ -276,7 +285,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     // From Unity Docs: On Mac OS X PlayerPrefs are stored in ~/Library/Preferences folder, in a file named unity.[company name].[product name].plist, where company and product names are the names set up in Project Settings. The same .plist file is used for both Projects run in the Editor and standalone players.
 
                     // Construct the plist filename from the project's settings
-                    string plistFilename = string.Format("unity.{0}.{1}.plist", companyName, productName);
+                    string plistFilename = $"unity.{companyName}.{productName}.plist";
                     // Now construct the fully qualified path
                     playerPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), plistFilename);
                 }
@@ -296,7 +305,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                         if (pair.Value.GetType() == typeof(double))
                         {
                             // Some float values may come back as double, so convert them back to floats
-                            tempPlayerPrefs.Add(new PlayerPrefPair() { Key = pair.Key, Value = (float)(double)pair.Value });
+                            tempPlayerPrefs.Add(new PlayerPrefPair() {Key = pair.Key, Value = (float) (double) pair.Value});
                         }
                         else if (pair.Value.GetType() == typeof(bool))
                         {
@@ -304,9 +313,10 @@ namespace Sabresaurus.PlayerPrefsEditor
                         }
                         else
                         {
-                            tempPlayerPrefs.Add(new PlayerPrefPair() { Key = pair.Key, Value = pair.Value });
+                            tempPlayerPrefs.Add(new PlayerPrefPair() {Key = pair.Key, Value = pair.Value});
                         }
                     }
+
                     // Return the results
                     return tempPlayerPrefs.ToArray();
                 }
@@ -387,12 +397,14 @@ namespace Sabresaurus.PlayerPrefsEditor
                         else if (ambiguousValue.GetType() == typeof(byte[]))
                         {
                             // On Unity 5 a string may be stored as binary, so convert it back to a string
-                            ambiguousValue = encoding.GetString((byte[])ambiguousValue).TrimEnd('\0');
+                            ambiguousValue = encoding.GetString((byte[]) ambiguousValue).TrimEnd('\0');
                         }
+
                         // Assign the key and value into the respective record in our output array
-                        tempPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = ambiguousValue };
+                        tempPlayerPrefs[i] = new PlayerPrefPair() {Key = key, Value = ambiguousValue};
                         i++;
                     }
+
                     // Return the results
                     return tempPlayerPrefs;
                 }
@@ -453,7 +465,6 @@ namespace Sabresaurus.PlayerPrefsEditor
             string newSearchFilter = searchField.OnGUI(searchFilter);
             GUILayout.Space(4);
 #else
-
             EditorGUILayout.BeginHorizontal();
             // Heading
             GUILayout.Label("Search", GUILayout.MaxWidth(50));
@@ -473,7 +484,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             // Allow the user to toggle between editor and PlayerPrefs
             int oldIndex = showEditorPrefs ? 1 : 0;
-            int newIndex = GUILayout.Toolbar(oldIndex, new string[] { "PlayerPrefs", "EditorPrefs" });
+            int newIndex = GUILayout.Toolbar(oldIndex, new[] {"Player Prefs", "Editor Prefs"});
 
             // Has the toggle changed?
             if (newIndex != oldIndex)
@@ -486,13 +497,45 @@ namespace Sabresaurus.PlayerPrefsEditor
 
         private void DrawMainList()
         {
+            GUILayout.Space(4);
+
+            Color oldBackgroundColor = GUI.backgroundColor;
+
             // The bold table headings
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Label("Key", EditorStyles.boldLabel);
-            GUILayout.Label("Value", EditorStyles.boldLabel);
-            GUILayout.Label("Type", EditorStyles.boldLabel, GUILayout.Width(37));
-            GUILayout.Label("Del", EditorStyles.boldLabel, GUILayout.Width(25));
-            EditorGUILayout.EndHorizontal();
+            Rect rowRect = GUILayoutUtility.GetRect(GUIContent.none, GUI.skin.label);
+            rowRect.xMin -= 5;
+            rowRect.xMax += 3;
+            rowRect.xMax -= 3;
+            Rect rightRect = rowRect;
+            rightRect.xMin = rowRect.xMax - 25;
+
+            Rect typeRect = rightRect;
+            typeRect.x -= 37;
+            typeRect.width = 37;
+
+            Rect keyRect = rowRect;
+            keyRect.xMax = typeRect.xMin / 2;
+            Rect valueRect = keyRect;
+            valueRect.x += keyRect.width;
+
+            keyRect.xMin += 10;
+            valueRect.xMin += 10;
+            valueRect.xMax -= 5;
+
+            GUIStyle style = EditorStyles.toolbar;
+            style.fontSize = 12;
+            style.fontStyle = FontStyle.Bold;
+            style.alignment = TextAnchor.MiddleCenter;
+
+            GUI.backgroundColor = EditorGUIUtility.isProSkin ? new Color(0.61f, 0.61f, 0.61f) : new Color(0.89f, 0.89f, 0.89f);
+            GUI.Label(rowRect, GUIContent.none, style);
+
+            GUI.backgroundColor = EditorGUIUtility.isProSkin ? new Color(0.56f, 0.56f, 0.56f) : new Color(0.84f, 0.84f, 0.84f);
+            GUI.Label(keyRect, "Key", style);
+            GUI.Label(valueRect, "Value", style);
+            GUI.Label(typeRect, "Type", style);
+            GUI.Label(rightRect, "Del", style);
+            GUI.backgroundColor = oldBackgroundColor;
 
             // Create a GUIStyle that can be manipulated for the various text fields
             GUIStyle textFieldStyle = new GUIStyle(GUI.skin.textField);
@@ -525,7 +568,9 @@ namespace Sabresaurus.PlayerPrefsEditor
             // PlayerPrefs without slowing the interface to a halt.
 
             // Fixed height of one of the rows in the table
-            float rowHeight = 18;
+            float baseRowHeight = 18;
+            float paddingEachSide = 2;
+            float rowHeight = 18 + paddingEachSide * 2;
 
             // Determine how many rows are visible on screen. For simplicity, use Screen.height (the overhead is negligible)
             int visibleCount = Mathf.CeilToInt(Screen.height / rowHeight);
@@ -536,7 +581,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             // Determine the bottom limit of the visible PlayerPrefs (last shown index + 1)
             int shownIndexLimit = firstShownIndex + visibleCount;
 
-            // If the actual number of PlayerPrefs is smaller than the caculated limit, reduce the limit to match
+            // If the actual number of PlayerPrefs is smaller than the calculated limit, reduce the limit to match
             if (entryCount < shownIndexLimit)
             {
                 shownIndexLimit = entryCount;
@@ -562,13 +607,36 @@ namespace Sabresaurus.PlayerPrefsEditor
             // For each of the on screen results
             for (int i = firstShownIndex; i < shownIndexLimit; i++)
             {
+                rowRect = GUILayoutUtility.GetRect(GUIContent.none, GUI.skin.label, GUILayout.Height(rowHeight));
+                rowRect.xMin -= 5;
+                rowRect.xMax += 3;
+                GUI.Label(rowRect, GUIContent.none, i % 2 == 0 ? "OL EntryBackEven" : "OL EntryBackOdd");
+                rowRect.xMax -= 3;
+                rowRect.height = baseRowHeight;
+                rowRect.y += paddingEachSide;
+                rightRect = rowRect;
+                rightRect.xMin = rowRect.xMax - 25;
+
+                typeRect = rightRect;
+                typeRect.x -= 37;
+                typeRect.width = 37;
+
+                keyRect = rowRect;
+                keyRect.xMax = typeRect.xMin / 2;
+                valueRect = keyRect;
+                valueRect.x += keyRect.width;
+
+                keyRect.xMin += 10;
+                valueRect.xMin += 10;
+                valueRect.xMax -= 5;
+
                 // Detect if it's an encrypted PlayerPref (these have key prefixes)
                 bool isEncryptedPair = PlayerPrefsUtility.IsEncryptedKey(activePlayerPrefs[i].Key);
 
                 // Colour code encrypted PlayerPrefs blue
                 if (isEncryptedPair)
                 {
-                    if (UsingProSkin)
+                    if (EditorGUIUtility.isProSkin)
                     {
                         textFieldStyle.normal.textColor = new Color(0.5f, 0.5f, 1);
                         textFieldStyle.focused.textColor = new Color(0.5f, 0.5f, 1);
@@ -605,7 +673,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     // This may throw exceptions (e.g. if private key changes), so wrap in a try-catch
                     try
                     {
-                        deserializedValue = PlayerPrefsUtility.GetEncryptedValue(fullKey, (string)deserializedValue);
+                        deserializedValue = PlayerPrefsUtility.GetEncryptedValue(fullKey, (string) deserializedValue);
                         displayKey = PlayerPrefsUtility.DecryptKey(fullKey);
                     }
                     catch
@@ -619,8 +687,6 @@ namespace Sabresaurus.PlayerPrefsEditor
                     }
                 }
 
-                EditorGUILayout.BeginHorizontal();
-
                 // The type of PlayerPref being stored (in auto decrypt mode this works with the decrypted values too)
                 Type valueType;
 
@@ -630,7 +696,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 {
                     // Get the encrypted string
                     string encryptedValue = GetString(fullKey);
-                    // Set valueType appropiately based on which type identifier prefix the encrypted string starts with
+                    // Set valueType appropriately based on which type identifier prefix the encrypted string starts with
                     if (encryptedValue.StartsWith(PlayerPrefsUtility.VALUE_FLOAT_PREFIX))
                     {
                         valueType = typeof(float);
@@ -661,7 +727,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 }
 
                 // Display the PlayerPref key
-                EditorGUILayout.TextField(displayKey, textFieldStyle);
+                EditorGUI.TextField(keyRect, displayKey, textFieldStyle);
 
                 // Value display and user editing
                 // If we're dealing with a float
@@ -680,7 +746,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     }
 
                     // Display the float editor field and get any changes in value
-                    float newValue = EditorGUILayout.FloatField(initialValue, textFieldStyle);
+                    float newValue = EditorGUI.FloatField(valueRect, initialValue, textFieldStyle);
 
                     // If the value has changed
                     if (newValue != initialValue)
@@ -695,11 +761,13 @@ namespace Sabresaurus.PlayerPrefsEditor
                         {
                             SetFloat(fullKey, newValue);
                         }
+
                         // Save PlayerPrefs
                         Save();
                     }
+
                     // Display the PlayerPref type
-                    GUILayout.Label("float", GUILayout.Width(37));
+                    GUI.Label(typeRect, "float");
                 }
                 else if (valueType == typeof(int)) // if we're dealing with an int
                 {
@@ -716,7 +784,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     }
 
                     // Display the int editor field and get any changes in value
-                    int newValue = EditorGUILayout.IntField(initialValue, textFieldStyle);
+                    int newValue = EditorGUI.IntField(valueRect, initialValue, textFieldStyle);
 
                     // If the value has changed
                     if (newValue != initialValue)
@@ -731,11 +799,13 @@ namespace Sabresaurus.PlayerPrefsEditor
                         {
                             SetInt(fullKey, newValue);
                         }
+
                         // Save PlayerPrefs
                         Save();
                     }
+
                     // Display the PlayerPref type
-                    GUILayout.Label("int", GUILayout.Width(37));
+                    GUI.Label(typeRect, "int");
                 }
                 else if (valueType == typeof(bool)) // if we're dealing with a bool
                 {
@@ -752,7 +822,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     }
 
                     // Display the bool toggle editor field and get any changes in value
-                    bool newValue = EditorGUILayout.Toggle(initialValue);
+                    bool newValue = EditorGUI.Toggle(valueRect, initialValue);
 
                     // If the value has changed
                     if (newValue != initialValue)
@@ -767,11 +837,13 @@ namespace Sabresaurus.PlayerPrefsEditor
                         {
                             SetBool(fullKey, newValue);
                         }
+
                         // Save PlayerPrefs
                         Save();
                     }
+
                     // Display the PlayerPref type
-                    GUILayout.Label("bool", GUILayout.Width(37));
+                    GUI.Label(typeRect, "bool");
                 }
                 else if (valueType == typeof(string)) // if we're dealing with a string
                 {
@@ -788,7 +860,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     }
 
                     // Display the text (string) editor field and get any changes in value
-                    string newValue = EditorGUILayout.TextField(initialValue, textFieldStyle);
+                    string newValue = EditorGUI.TextField(valueRect, initialValue, textFieldStyle);
 
                     // If the value has changed
                     if (newValue != initialValue && !failedAutoDecrypt)
@@ -803,25 +875,27 @@ namespace Sabresaurus.PlayerPrefsEditor
                         {
                             SetString(fullKey, newValue);
                         }
+
                         // Save PlayerPrefs
                         Save();
                     }
+
                     if (isEncryptedPair && !automaticDecryption && !string.IsNullOrEmpty(initialValue))
                     {
                         // Because encrypted values when not in auto-decrypt mode are stored as string, determine their
                         // encrypted type and display that instead for these encrypted PlayerPrefs
-                        PlayerPrefType playerPrefType = (PlayerPrefType)(int)char.GetNumericValue(initialValue[0]);
-                        GUILayout.Label(playerPrefType.ToString().ToLower(), GUILayout.Width(37));
+                        PlayerPrefType playerPrefType = (PlayerPrefType) (int) char.GetNumericValue(initialValue[0]);
+                        GUI.Label(typeRect, playerPrefType.ToString().ToLower());
                     }
                     else
                     {
                         // Display the PlayerPref type
-                        GUILayout.Label("string", GUILayout.Width(37));
+                        GUI.Label(typeRect, "string");
                     }
                 }
 
                 // Delete button
-                if (GUILayout.Button("X", GUILayout.Width(25)))
+                if (GUI.Button(rightRect, new GUIContent((Texture2D) EditorGUIUtility.TrIconContent("winbtn_mac_close_h").image, "Delete Pref")))
                 {
                     // Delete the key from PlayerPrefs
                     DeleteKey(fullKey);
@@ -830,7 +904,6 @@ namespace Sabresaurus.PlayerPrefsEditor
                     // Delete the cached record so the list updates immediately
                     DeleteCachedRecord(fullKey);
                 }
-                EditorGUILayout.EndHorizontal();
             }
 
             // Calculate the padding at the bottom of the scroll view (because only visible PlayerPref rows are drawn)
@@ -862,244 +935,256 @@ namespace Sabresaurus.PlayerPrefsEditor
             EditorGUILayout.Space();
 
             // Heading
-            GUILayout.Label(showEditorPrefs ? "Add EditorPref" : "Add PlayerPref", EditorStyles.boldLabel);
+            DisplayAddPref = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayAddPref, showEditorPrefs ? "Add Editor Pref" : "Add Player Pref");
 
-            // UI for whether the new PlayerPref is encrypted and what type it is
-            EditorGUILayout.BeginHorizontal();
-            newEntryIsEncrypted = GUILayout.Toggle(newEntryIsEncrypted, "Encrypt");
-
-            if (showEditorPrefs)
+            if (DisplayAddPref)
             {
-                newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)newEntryType, new string[] { "float", "int", "string", "bool" });
-            }
-            else
-            {
-                if (newEntryType == PlayerPrefType.Bool)
-                    newEntryType = PlayerPrefType.String;
+                // UI for whether the new PlayerPref is encrypted and what type it is
+                EditorGUILayout.BeginHorizontal();
+                newEntryIsEncrypted = GUILayout.Toggle(newEntryIsEncrypted, "Encrypt");
 
-                newEntryType = (PlayerPrefType)GUILayout.Toolbar((int)newEntryType, new string[] { "float", "int", "string" });
-            }
-
-            EditorGUILayout.EndHorizontal();
-
-            // Key and Value headings
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.Label("Key", EditorStyles.boldLabel);
-            GUILayout.Label("Value", EditorStyles.boldLabel);
-            EditorGUILayout.EndHorizontal();
-
-            // If the new value will be encrypted tint the text boxes blue (in line with the display style for existing
-            // encrypted PlayerPrefs)
-            if (newEntryIsEncrypted)
-            {
-                if (UsingProSkin)
+                if (showEditorPrefs)
                 {
-                    textFieldStyle.normal.textColor = new Color(0.5f, 0.5f, 1);
-                    textFieldStyle.focused.textColor = new Color(0.5f, 0.5f, 1);
+                    newEntryType = (PlayerPrefType) GUILayout.Toolbar((int) newEntryType, new string[] {"float", "int", "string", "bool"});
                 }
                 else
                 {
-                    textFieldStyle.normal.textColor = new Color(0, 0, 1);
-                    textFieldStyle.focused.textColor = new Color(0, 0, 1);
+                    if (newEntryType == PlayerPrefType.Bool)
+                        newEntryType = PlayerPrefType.String;
+
+                    newEntryType = (PlayerPrefType) GUILayout.Toolbar((int) newEntryType, new string[] {"float", "int", "string"});
                 }
-            }
 
-            EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.EndHorizontal();
 
-            // Track the next control so we can detect key events in it
-            GUI.SetNextControlName("newEntryKey");
-            // UI for the new key text box
-            newEntryKey = EditorGUILayout.TextField(newEntryKey, textFieldStyle);
+                // Key and Value headings
+                EditorGUILayout.BeginHorizontal();
+                GUILayout.Label("Key", EditorStyles.boldLabel);
+                GUILayout.Label("Value", EditorStyles.boldLabel);
+                EditorGUILayout.EndHorizontal();
 
-            // Track the next control so we can detect key events in it
-            GUI.SetNextControlName("newEntryValue");
-
-            // Display the correct UI field editor based on what type of PlayerPref is being created
-            if (newEntryType == PlayerPrefType.Float)
-            {
-                newEntryValueFloat = EditorGUILayout.FloatField(newEntryValueFloat, textFieldStyle);
-            }
-            else if (newEntryType == PlayerPrefType.Int)
-            {
-                newEntryValueInt = EditorGUILayout.IntField(newEntryValueInt, textFieldStyle);
-            }
-            else if (newEntryType == PlayerPrefType.Bool)
-            {
-                newEntryValueBool = EditorGUILayout.Toggle(newEntryValueBool);
-            }
-            else
-            {
-                newEntryValueString = EditorGUILayout.TextField(newEntryValueString, textFieldStyle);
-            }
-
-            // If the user hit enter while either the key or value fields were being edited
-            bool keyboardAddPressed = Event.current.isKey && Event.current.keyCode == KeyCode.Return && Event.current.type == EventType.KeyUp && (GUI.GetNameOfFocusedControl() == "newEntryKey" || GUI.GetNameOfFocusedControl() == "newEntryValue");
-
-            // If the user clicks the Add button or hits return (and there is a non-empty key), create the PlayerPref
-            if ((GUILayout.Button("Add", GUILayout.Width(40)) || keyboardAddPressed) && !string.IsNullOrEmpty(newEntryKey))
-            {
-                // If the PlayerPref we're creating is encrypted
+                // If the new value will be encrypted tint the text boxes blue (in line with the display style for existing
+                // encrypted PlayerPrefs)
                 if (newEntryIsEncrypted)
                 {
-                    // Encrypt the key
-                    string encryptedKey = PlayerPrefsUtility.KEY_PREFIX + SimpleEncryption.EncryptString(newEntryKey);
-
-                    // Note: All encrypted values are stored as string
-                    string encryptedValue;
-
-                    // Calculate the encrypted value
-                    if (newEntryType == PlayerPrefType.Float)
+                    if (EditorGUIUtility.isProSkin)
                     {
-                        encryptedValue = PlayerPrefsUtility.VALUE_FLOAT_PREFIX + SimpleEncryption.EncryptFloat(newEntryValueFloat);
-                    }
-                    else if (newEntryType == PlayerPrefType.Int)
-                    {
-                        encryptedValue = PlayerPrefsUtility.VALUE_INT_PREFIX + SimpleEncryption.EncryptInt(newEntryValueInt);
-                    }
-                    else if (newEntryType == PlayerPrefType.Bool)
-                    {
-                        encryptedValue = PlayerPrefsUtility.VALUE_BOOL_PREFIX + SimpleEncryption.EncryptBool(newEntryValueBool);
+                        textFieldStyle.normal.textColor = new Color(0.5f, 0.5f, 1);
+                        textFieldStyle.focused.textColor = new Color(0.5f, 0.5f, 1);
                     }
                     else
                     {
-                        encryptedValue = PlayerPrefsUtility.VALUE_STRING_PREFIX + SimpleEncryption.EncryptString(newEntryValueString);
+                        textFieldStyle.normal.textColor = new Color(0, 0, 1);
+                        textFieldStyle.focused.textColor = new Color(0, 0, 1);
                     }
+                }
 
-                    // Record the new PlayerPref in PlayerPrefs
-                    SetString(encryptedKey, encryptedValue);
+                EditorGUILayout.BeginHorizontal();
 
-                    // Cache the addition
-                    CacheRecord(encryptedKey, encryptedValue);
+                // Track the next control so we can detect key events in it
+                GUI.SetNextControlName("newEntryKey");
+                // UI for the new key text box
+                newEntryKey = EditorGUILayout.TextField(newEntryKey, textFieldStyle);
+
+                // Track the next control so we can detect key events in it
+                GUI.SetNextControlName("newEntryValue");
+
+                // Display the correct UI field editor based on what type of PlayerPref is being created
+                if (newEntryType == PlayerPrefType.Float)
+                {
+                    newEntryValueFloat = EditorGUILayout.FloatField(newEntryValueFloat, textFieldStyle);
+                }
+                else if (newEntryType == PlayerPrefType.Int)
+                {
+                    newEntryValueInt = EditorGUILayout.IntField(newEntryValueInt, textFieldStyle);
+                }
+                else if (newEntryType == PlayerPrefType.Bool)
+                {
+                    newEntryValueBool = EditorGUILayout.Toggle(newEntryValueBool);
                 }
                 else
                 {
-                    if (newEntryType == PlayerPrefType.Float)
+                    newEntryValueString = EditorGUILayout.TextField(newEntryValueString, textFieldStyle);
+                }
+
+                // If the user hit enter while either the key or value fields were being edited
+                bool keyboardAddPressed = Event.current.isKey && Event.current.keyCode == KeyCode.Return && Event.current.type == EventType.KeyUp && (GUI.GetNameOfFocusedControl() == "newEntryKey" || GUI.GetNameOfFocusedControl() == "newEntryValue");
+
+                // If the user clicks the Add button or hits return (and there is a non-empty key), create the PlayerPref
+                if ((GUILayout.Button("Add", GUILayout.Width(40)) || keyboardAddPressed) && !string.IsNullOrEmpty(newEntryKey))
+                {
+                    // If the PlayerPref we're creating is encrypted
+                    if (newEntryIsEncrypted)
                     {
+                        // Encrypt the key
+                        string encryptedKey = PlayerPrefsUtility.KEY_PREFIX + SimpleEncryption.EncryptString(newEntryKey);
+
+                        // Note: All encrypted values are stored as string
+                        string encryptedValue;
+
+                        // Calculate the encrypted value
+                        if (newEntryType == PlayerPrefType.Float)
+                        {
+                            encryptedValue = PlayerPrefsUtility.VALUE_FLOAT_PREFIX + SimpleEncryption.EncryptFloat(newEntryValueFloat);
+                        }
+                        else if (newEntryType == PlayerPrefType.Int)
+                        {
+                            encryptedValue = PlayerPrefsUtility.VALUE_INT_PREFIX + SimpleEncryption.EncryptInt(newEntryValueInt);
+                        }
+                        else if (newEntryType == PlayerPrefType.Bool)
+                        {
+                            encryptedValue = PlayerPrefsUtility.VALUE_BOOL_PREFIX + SimpleEncryption.EncryptBool(newEntryValueBool);
+                        }
+                        else
+                        {
+                            encryptedValue = PlayerPrefsUtility.VALUE_STRING_PREFIX + SimpleEncryption.EncryptString(newEntryValueString);
+                        }
+
                         // Record the new PlayerPref in PlayerPrefs
-                        SetFloat(newEntryKey, newEntryValueFloat);
+                        SetString(encryptedKey, encryptedValue);
+
                         // Cache the addition
-                        CacheRecord(newEntryKey, newEntryValueFloat);
-                    }
-                    else if (newEntryType == PlayerPrefType.Int)
-                    {
-                        // Record the new PlayerPref in PlayerPrefs
-                        SetInt(newEntryKey, newEntryValueInt);
-                        // Cache the addition
-                        CacheRecord(newEntryKey, newEntryValueInt);
-                    }
-                    else if (newEntryType == PlayerPrefType.Bool)
-                    {
-                        // Record the new PlayerPref in PlayerPrefs
-                        SetBool(newEntryKey, newEntryValueBool);
-                        // Cache the addition
-                        CacheRecord(newEntryKey, newEntryValueBool);
+                        CacheRecord(encryptedKey, encryptedValue);
                     }
                     else
                     {
-                        // Record the new PlayerPref in PlayerPrefs
-                        SetString(newEntryKey, newEntryValueString);
-                        // Cache the addition
-                        CacheRecord(newEntryKey, newEntryValueString);
+                        if (newEntryType == PlayerPrefType.Float)
+                        {
+                            // Record the new PlayerPref in PlayerPrefs
+                            SetFloat(newEntryKey, newEntryValueFloat);
+                            // Cache the addition
+                            CacheRecord(newEntryKey, newEntryValueFloat);
+                        }
+                        else if (newEntryType == PlayerPrefType.Int)
+                        {
+                            // Record the new PlayerPref in PlayerPrefs
+                            SetInt(newEntryKey, newEntryValueInt);
+                            // Cache the addition
+                            CacheRecord(newEntryKey, newEntryValueInt);
+                        }
+                        else if (newEntryType == PlayerPrefType.Bool)
+                        {
+                            // Record the new PlayerPref in PlayerPrefs
+                            SetBool(newEntryKey, newEntryValueBool);
+                            // Cache the addition
+                            CacheRecord(newEntryKey, newEntryValueBool);
+                        }
+                        else
+                        {
+                            // Record the new PlayerPref in PlayerPrefs
+                            SetString(newEntryKey, newEntryValueString);
+                            // Cache the addition
+                            CacheRecord(newEntryKey, newEntryValueString);
+                        }
                     }
+
+                    // Tell Unity to save the PlayerPrefs
+                    Save();
+
+                    // Force a repaint since hitting the return key won't invalidate layout on its own
+                    Repaint();
+
+                    // Reset the values
+                    newEntryKey = "";
+                    newEntryValueFloat = 0;
+                    newEntryValueInt = 0;
+                    newEntryValueString = "";
+
+                    // Deselect
+                    GUI.FocusControl("");
                 }
 
-                // Tell Unity to save the PlayerPrefs
-                Save();
-
-                // Force a repaint since hitting the return key won't invalidate layout on its own
-                Repaint();
-
-                // Reset the values
-                newEntryKey = "";
-                newEntryValueFloat = 0;
-                newEntryValueInt = 0;
-                newEntryValueString = "";
-
-                // Deselect
-                GUI.FocusControl("");
+                EditorGUILayout.EndHorizontal();
             }
 
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         private void DrawBottomMenu()
         {
             EditorGUILayout.Space();
+            DisplayMoreOptions = EditorGUILayout.BeginFoldoutHeaderGroup(DisplayMoreOptions, "More Options");
 
-            EditorGUILayout.BeginHorizontal();
-            // UI for toggling automatic decryption on and off
-            automaticDecryption = EditorGUILayout.Toggle("Auto-Decryption", automaticDecryption);
-
-            if (this.position.width < 390)
+            if (DisplayMoreOptions)
             {
-                EditorGUILayout.EndHorizontal();
                 EditorGUILayout.BeginHorizontal();
-            }
-            
-            GUILayout.Label("Active Key", EditorStyles.boldLabel);
-            if (!SimpleEncryption.IsCustomKeyApplied)
-            {
-                GUILayout.Label("Built-in");
+                // UI for toggling automatic decryption on and off
+                automaticDecryption = EditorGUILayout.Toggle("Auto-Decryption", automaticDecryption);
 
-                if(GUILayout.Button(new GUIContent("Create Custom", "Generate a script file in your project specifying a unique key to use")))
+                if (this.position.width < 390)
                 {
-                    // Get the contents of the template file
-                    string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
-                    string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
-                    string templateText = File.ReadAllText(Path.Combine(Path.GetDirectoryName(assetPath), "GameEncryptionKeyInitializerTemplate.cs.txt"));
+                    EditorGUILayout.EndHorizontal();
+                    EditorGUILayout.BeginHorizontal();
+                }
 
-                    // Replace the key in the template with a unique key
-                    byte[] key = new byte[32];
-                    for (int i = 0; i < 32; i++)
+                GUILayout.Label("Active Key", EditorStyles.boldLabel);
+                if (!SimpleEncryption.IsCustomKeyApplied)
+                {
+                    GUILayout.Label("Built-in");
+
+                    if (GUILayout.Button(new GUIContent("Create Custom", "Generate a script file in your project specifying a unique key to use")))
                     {
-                        key[i] = (byte) Random.Range(0, 256);
+                        // Get the contents of the template file
+                        string[] guids = AssetDatabase.FindAssets("BaseEncryptionKeyInitializer");
+                        string assetPath = AssetDatabase.GUIDToAssetPath(guids[0]);
+                        string templateText = File.ReadAllText(Path.Combine(Path.GetDirectoryName(assetPath), "GameEncryptionKeyInitializerTemplate.cs.txt"));
+
+                        // Replace the key in the template with a unique key
+                        byte[] key = new byte[32];
+                        for (int i = 0; i < 32; i++)
+                        {
+                            key[i] = (byte) Random.Range(0, 256);
+                        }
+
+                        templateText = templateText.Replace("#CUSTOMKEY#", string.Join(", ", key));
+
+                        // Write the game encryption script to Assets/ and import it
+                        File.WriteAllText("Assets/GameEncryptionKeyInitializer.cs", templateText);
+                        AssetDatabase.ImportAsset("Assets/GameEncryptionKeyInitializer.cs", ImportAssetOptions.ForceUpdate);
                     }
-
-                    templateText = templateText.Replace("#CUSTOMKEY#", string.Join(", ", key));
-                    
-                    // Write the game encryption script to Assets/ and import it
-                    File.WriteAllText("Assets/GameEncryptionKeyInitializer.cs", templateText);
-                    AssetDatabase.ImportAsset("Assets/GameEncryptionKeyInitializer.cs", ImportAssetOptions.ForceUpdate);
                 }
-            }
-            else
-            {
-                GUILayout.Label("Custom");
-            }
-            
-            EditorGUILayout.EndHorizontal();
-            if (showEditorPrefs == false)
-            {
-                // Allow the user to import PlayerPrefs from another project (helpful when renaming product name)
-                if (GUILayout.Button("Import"))
+                else
                 {
-                    ImportPlayerPrefsWizard wizard = ScriptableWizard.DisplayWizard<ImportPlayerPrefsWizard>("Import PlayerPrefs", "Import");
+                    GUILayout.Label("Custom");
                 }
-            }
 
-            EditorGUILayout.BeginHorizontal();
-            float buttonWidth = (EditorGUIUtility.currentViewWidth - 10) / 2f;
-            // Delete all PlayerPrefs
-            if (GUILayout.Button("Delete All Preferences", GUILayout.Width(buttonWidth)))
-            {
-                if (EditorUtility.DisplayDialog("Delete All?", "Are you sure you want to delete all preferences?", "Delete All", "Cancel"))
+                EditorGUILayout.EndHorizontal();
+                if (showEditorPrefs == false)
                 {
-                    DeleteAll();
+                    // Allow the user to import PlayerPrefs from another project (helpful when renaming product name)
+                    if (GUILayout.Button("Import"))
+                    {
+                        ImportPlayerPrefsWizard wizard = ScriptableWizard.DisplayWizard<ImportPlayerPrefsWizard>("Import PlayerPrefs", "Import");
+                    }
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                float buttonWidth = (EditorGUIUtility.currentViewWidth - 10) / 2f;
+                // Delete all PlayerPrefs
+                if (GUILayout.Button("Delete All Preferences", GUILayout.Width(buttonWidth)))
+                {
+                    if (EditorUtility.DisplayDialog("Delete All?", "Are you sure you want to delete all preferences?", "Delete All", "Cancel"))
+                    {
+                        DeleteAll();
+                        Save();
+
+                        // Clear the cache too, for an instant visibility update for OSX
+                        deserializedPlayerPrefs.Clear();
+                    }
+                }
+
+                GUILayout.FlexibleSpace();
+
+                // Mainly needed for OSX, this will encourage PlayerPrefs to save to file (but still may take a few seconds)
+                if (GUILayout.Button("Force Save", GUILayout.Width(buttonWidth)))
+                {
                     Save();
-
-                    // Clear the cache too, for an instant visibility update for OSX
-                    deserializedPlayerPrefs.Clear();
                 }
+
+                EditorGUILayout.EndHorizontal();
             }
 
-            GUILayout.FlexibleSpace();
-
-            // Mainly needed for OSX, this will encourage PlayerPrefs to save to file (but still may take a few seconds)
-            if (GUILayout.Button("Force Save", GUILayout.Width(buttonWidth)))
-            {
-                Save();
-            }
-            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.EndFoldoutHeaderGroup();
         }
 
         private void DeserializePrefsIntoCache()
@@ -1117,7 +1202,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                     // From Unity Docs: On Mac OS X PlayerPrefs are stored in ~/Library/Preferences folder, in a file named unity.[company name].[product name].plist, where company and product names are the names set up in Project Settings. The same .plist file is used for both Projects run in the Editor and standalone players.
 
                     // Construct the plist filename from the project's settings
-                    string plistFilename = string.Format("unity.{0}.{1}.plist", PlayerSettings.companyName, PlayerSettings.productName);
+                    string plistFilename = $"unity.{PlayerSettings.companyName}.{PlayerSettings.productName}.plist";
                     // Now construct the fully qualified path
                     playerPrefsPath = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library/Preferences"), plistFilename);
                 }
@@ -1194,7 +1279,7 @@ namespace Sabresaurus.PlayerPrefsEditor
                 if (deserializedPlayerPrefs[i].Key == key)
                 {
                     // Update the cached pref with the new value
-                    deserializedPlayerPrefs[i] = new PlayerPrefPair() { Key = key, Value = value };
+                    deserializedPlayerPrefs[i] = new PlayerPrefPair() {Key = key, Value = value};
                     // Mark the replacement so we no longer need to add it
                     replaced = true;
                     break;
@@ -1205,7 +1290,7 @@ namespace Sabresaurus.PlayerPrefsEditor
             if (!replaced)
             {
                 // Cache a PlayerPref the user just created so it can be instantly display (mainly for OSX)
-                deserializedPlayerPrefs.Add(new PlayerPrefPair() { Key = key, Value = value });
+                deserializedPlayerPrefs.Add(new PlayerPrefPair() {Key = key, Value = value});
             }
 
             // Update the search if it's active
@@ -1262,11 +1347,11 @@ namespace Sabresaurus.PlayerPrefsEditor
             {
                 Type type = importedPairs[i].Value.GetType();
                 if (type == typeof(float))
-                    SetFloat(importedPairs[i].Key, (float)importedPairs[i].Value);
+                    SetFloat(importedPairs[i].Key, (float) importedPairs[i].Value);
                 else if (type == typeof(int))
-                    SetInt(importedPairs[i].Key, (int)importedPairs[i].Value);
+                    SetInt(importedPairs[i].Key, (int) importedPairs[i].Value);
                 else if (type == typeof(string))
-                    SetString(importedPairs[i].Key, (string)importedPairs[i].Value);
+                    SetString(importedPairs[i].Key, (string) importedPairs[i].Value);
 
                 // Cache any new records until they are reimported from disk
                 CacheRecord(importedPairs[i].Key, importedPairs[i].Value);
@@ -1274,25 +1359,6 @@ namespace Sabresaurus.PlayerPrefsEditor
 
             // Force a save
             Save();
-        }
-
-        bool UsingProSkin
-        {
-            get
-            {
-#if UNITY_3_4
-                if(EditorPrefs.GetInt("UserSkin") == 1)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-#else
-                return EditorGUIUtility.isProSkin;
-#endif
-            }
         }
     }
 }

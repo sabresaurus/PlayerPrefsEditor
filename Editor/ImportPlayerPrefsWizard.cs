@@ -27,8 +27,7 @@ namespace Sabresaurus.PlayerPrefsEditor
         {
             GUILayout.Label("Import PlayerPrefs from another project, also useful if you change product or company name", EditorStyles.wordWrappedLabel);
             EditorGUILayout.Separator();
-            bool v = base.DrawWizardGUI();
-            return v;
+            return base.DrawWizardGUI();
         }
 
         private void OnWizardCreate()
