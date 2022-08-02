@@ -85,7 +85,7 @@ To add it the package to your project:
 - open Package Manager
 - click <kbd>+</kbd>
 - select <kbd>Add from Git URL</kbd>
-- paste `com.sabresaurus.sidekick`
+- paste `com.sabresaurus.playerprefseditor`
 - click <kbd>Add</kbd>
 </details>
 
