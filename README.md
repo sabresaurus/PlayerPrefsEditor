@@ -7,13 +7,13 @@
 PlayerPrefs Editor & Utilities provide an easy way to see what PlayerPrefs your game is using and change them at run-time. It also includes encryption support to protect your player prefs from casual hacking and has additional support for more data types.
 
 Editor features include:
-- list all active PlayerPrefs
-- search for PlayerPrefs to refine results
-- change PlayerPref values at run-time
-- add new PlayerPrefs
-- delete PlayerPrefs
+- list all active PlayerPrefs and EditorPrefs
+- search for prefs to refine results
+- change pref values at run-time
+- add new prefs
+- delete prefs
 - quick delete all button
-- import Player Prefs from another project
+- import prefs from another project
 - supports working with the encryption features added in the utilities
 
 Utilities features include:
@@ -30,7 +30,7 @@ For a more comprehensive quick start guide and API documentation please go to ht
 
 ## PlayerPrefs Editor
 
-To open the PlayersPrefs Editor go to Window -> Player Prefs Editor
+To open the PlayersPrefs Editor go to Window -> PlayerPrefs Editor
 
 This will open an editor window which you can dock like any other Unity window.
 
@@ -57,6 +57,52 @@ To delete an existing player pref, click the X button next to the player pref in
 
 ## PlayerPrefs Utilities
 
-IMPORTANT: If using encryption, make sure you change the key specified in SimpleEncryption.cs, this will make sure your key is unique and make the protection stronger.
+IMPORTANT: If using encryption, make sure you create a custom key under More Options, this will make sure your key is unique and make the protection stronger.
 
 In PlayerPrefsUtility.cs you'll find a set of utility methods for dealing with encryption and also new data types. There is documentation within this file explaining how each method works. There is also additional documentation at http://sabresaurus.com/docs/playerprefs-editor-utilities-documentation/
+
+# License
+
+Licensed under MIT, see **LICENSE** for details.
+
+# Installation
+
+<details>
+<summary>Add from OpenUPM <em>| via scoped registry, recommended</em></summary>
+
+This package is available on OpenUPM: https://openupm.com/packages/com.sabresaurus.playerprefseditor/
+
+To add it the package to your project:
+
+- open `Edit/Project Settings/Package Manager`
+- add a new Scoped Registry:
+  ```
+  Name: OpenUPM
+  URL:  https://package.openupm.com/
+  Scope(s): com.sabresaurus
+  ```
+- click <kbd>Save</kbd>
+- open Package Manager
+- click <kbd>+</kbd>
+- select <kbd>Add from Git URL</kbd>
+- paste `com.sabresaurus.sidekick`
+- click <kbd>Add</kbd>
+</details>
+
+<details>
+<summary>Add from GitHub | <em>not recommended, no updates through UPM</em></summary>
+
+You can also add it directly from GitHub on Unity 2020.3+. Note that you won't be able to receive updates through Package Manager this way, you'll have to update manually.
+
+- open Package Manager
+- click <kbd>+</kbd>
+- select <kbd>Add from Git URL</kbd>
+- paste `https://github.com/sabresaurus/PlayerPrefsEditor.git`
+- click <kbd>Add</kbd>  
+**or**  
+- Edit your `Packages/manifest.json` file to contain `"com.sabresaurus.playerprefseditor": "https://github.com/sabresaurus/PlayerPrefsEditor.git"`,
+  
+To update the package with new changes, remove the lock from the `Packages/packages-lock.json` file.
+</details>
+
+To open the window go to `Window → PlayerPrefs Editor`

@@ -379,7 +379,7 @@ namespace Sabresaurus.PlayerPrefsEditor
 
                         // Unfortunately floats will come back as an int (at least on 64 bit) because the float is stored as
                         // 64 bit but marked as 32 bit - which confuses the GetValue() method greatly!
-                        if (ambiguousValue.GetType() == typeof(int))
+                        if (ambiguousValue.GetType() == typeof(int) || ambiguousValue.GetType() == typeof(long))
                         {
                             // If the PlayerPref is not actually an int then it must be a float, this will evaluate to true
                             // (impossible for it to be 0 and -1 at the same time)
@@ -892,6 +892,10 @@ namespace Sabresaurus.PlayerPrefsEditor
                         // Display the PlayerPref type
                         GUI.Label(typeRect, "string");
                     }
+                }
+                else
+                {
+                    GUI.Label(valueRect, "Unsupported: " + valueType.ToString());
                 }
 
                 // Delete button
